@@ -1,0 +1,31 @@
+#!/bin/bash
+#NAMESPACE=dependencies
+
+namespaced MODULE_LIST=()
+
+function register_module(module) {
+   namespaced MODULE_LIST+=($module)
+}
+
+function depends(module) {
+    for mod in ${namespaced MODULE_LIST[@]}
+    do
+        if [[ $mod == $module ]]
+        then
+            return 0
+        fi
+    done
+
+    bootstrap_load_module $module
+
+    if [[ $? == 0 ]]
+    then
+        return 0
+    fi
+
+    echo "Dependency unmet: $module is not loaded"
+    bootstrap_trace
+    exit 2
+}
+
+this::register_module "dependencies"

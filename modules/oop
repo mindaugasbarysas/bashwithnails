@@ -1,0 +1,57 @@
+#!/bin/bash
+#NAMESPACE=oop
+dependencies::register_module "oop"
+namespaced IDLIST=()
+namespaced IDNUM=1
+
+function increase_num
+{
+    namespaced IDNUM=`expr ${namespaced IDNUM} + 1`
+}
+
+function new(namespace constructor_args object_name) {
+    local ID="${object_name}_${namespaced IDNUM}"
+    this::increase_num
+    local MOD=`bootstrap_module_from_namespace $namespace`
+    local TEMPFILE=`mktemp /tmp/sh-oop-${ID}.XXXXXXXXXX`
+    bootstrap_prepare_module $ID $MOD > $TEMPFILE
+    . $TEMPFILE
+    rm $TEMPFILE
+    namespaced IDLIST+=($ID)
+    constructor_args=${constructor_args//,/\ }
+    eval "$ID::__construct $constructor_args"
+}
+
+function call(object function_name args) {
+    args=${args//,/\ }
+    for obj in ${namespaced IDLIST[@]}
+    do
+      if [[ $obj =~ $object ]]
+      then
+        eval "$obj::$function_name $args"
+      fi
+    done
+}
+
+function destroy(object args) {
+    args=${args//,/\ }
+    for obj in ${namespaced IDLIST[@]}
+    do
+      if [[ $obj =~ $object ]]
+      then
+        eval "$obj::__destruct $args"
+      fi
+    done
+    local newIDLIST=()
+    for obj in ${namespaced IDLIST[@]}
+    do
+      if [[ $obj =~ $object ]]
+      then
+        true
+      else
+        newIDLIST+=($obj)
+      fi
+    done
+    unset namespaced IDLIST
+    namespaced IDLIST=${newIDLIST[@]}
+}
