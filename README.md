@@ -3,7 +3,7 @@ Bash With Nails (rhymes with ruby on rails) is a bash framework written for fun 
 
 I'm kidding about the fun and profit part.
 
-It boasts of:
+It has:
 
 - loading of bash function collections in separate "modules".
 - dependency management and automatic loading of relevant "modules".
@@ -11,12 +11,15 @@ It boasts of:
 - if you want to refer to your own namespace, you can use `this::myfunction` in your module.
 - named function parameters, e.g. `function myfunction(a b c) { echo "$a $b $c"; }`.
 - weak OOP support, e.g. `oop::new oop_demo '1,2' 'obj_one'; oop::new oop_demo '3,4' 'obj_two'; oop::call 'obj_one' sum ""; oop::call 'obj_two' sum ""; oop::destroy 'obj_two' ''`
+- modules can be downloaded from the repository (as seen in sample_repo folder)
+
+see [Docs](https://github.com/mindaugasbarysas/bashwithnails/blob/master/docs/man.md) or clone and run for more information.
 
 ## How to run
 
 `./app.sh`
 
-and see the magic happen.
+and see all the magic described above happen.
 
 ## Why "with nails"?
 
@@ -24,4 +27,4 @@ Because
 
 ![cursed hammer](http://i.imgur.com/6qZcv6j.jpg?fb)
 
-So it's only natural you want nails with that.
+So it's only natural you want nails with that. Or you can keep on bashing your thumbs - it's a free world!
