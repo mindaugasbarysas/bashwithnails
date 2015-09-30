@@ -1,6 +1,6 @@
 #!/bin/bash
 #NAMESPACE=oop
-dependencies::register_module "oop"
+dependencies::register_module "core/oop"
 namespaced IDLIST=()
 namespaced IDNUM=1
 

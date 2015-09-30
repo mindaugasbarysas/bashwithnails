@@ -1,7 +1,8 @@
 #!/bin/bash
 #NAMESPACE=demo
 
-dependencies::depends "oop"
+dependencies::depends "core/oop"
+dependencies::depends "test/module"
 dependencies::register_module "demo/app"
 
 function run(demo_string) {

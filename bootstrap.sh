@@ -15,7 +15,10 @@ function bootstrap_load_module()
     then
         bootstrap_load_environment
     fi
-
+    if [[ ! -f $SCRIPT_DIR/modules/$1 ]]
+    then
+        return $ERROR_NOT_FOUND
+    fi
     local NAMESPACE=`cat $SCRIPT_DIR/modules/$1 | grep "NAMESPACE=" | cut -d= -f2`
     bootstrap_check $1
     local TEMPFILE=`mktemp /tmp/sh-bootstrap-${NAMESPACE}.XXXXXXXXXX`
@@ -75,4 +78,4 @@ function bootstrap_trace
     done
 }
 
-bootstrap_load_module dependencies
+bootstrap_load_module core/dependencies

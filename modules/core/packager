@@ -1,0 +1,49 @@
+#!/bin/bash
+#NAMESPACE=packager
+
+dependencies::register_module "core/packager"
+
+namespaced REPO_ADDRESS=$GLOBAL_REPOSITORY_ADDRESS;
+namespaced CACHE_DIR=$GLOBAL_CACHE_DIR;
+
+function set_repository(repository_address) {
+    namespaced REPO_ADDRESS=$repository_address;
+}
+
+function set_cache_dir(cache_dir) {
+    namespaced CACHE_DIR=$cache_dir;
+}
+
+function get_module(module_name) {
+    module_name=${module_name//./}
+    local filename=${namespaced CACHE_DIR}/`echo "${namespaced REPO_ADDRESS}" | md5`
+    if [[ ! -f $filename ]]
+    then
+        wget -O $filename ${namespaced REPO_ADDRESS}
+        if [[ $? -ne 0 ]]
+        then
+            rm $filename
+            echo "repository not found at ${namespaced REPO_ADDRESS}"
+            bootstrap_trace
+            exit $ERROR_NOT_FOUND
+        fi
+    fi
+
+    local mod_place=`cat $filename | grep -w "$module_name" | cut -d@ -f 2-`
+
+    if [[ $mod_place != '' ]]
+    then
+        mkdir $SCRIPT_DIR/modules/$module_name
+        wget -O $SCRIPT_DIR/modules/$module_name $mod_place
+    else
+        echo "module '$module_name' not found in repository"
+        exit $ERROR_NOT_FOUND
+    fi
+}
+
+function cleanup {
+    for mod in `find -f $SCRIPT_DIR/modules -type f | sed "s;$SCRIPT_DIR/modules/;;g"`
+    do
+        true;
+    done
+}

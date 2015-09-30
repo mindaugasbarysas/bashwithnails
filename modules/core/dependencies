@@ -23,9 +23,17 @@ function depends(module) {
         return 0
     fi
 
+    packager::get_module $module
+    bootstrap_load_module $module
+    if [[ $? == 0 ]]
+    then
+        return 0
+    fi
+
     echo "Dependency unmet: $module is not loaded"
     bootstrap_trace
     exit 2
 }
 
-this::register_module "dependencies"
+this::register_module "core/dependencies"
+this::depends "core/packager"

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo "Hi, I'm the module automatically downloaded and installed by the dependencies + packager!"
