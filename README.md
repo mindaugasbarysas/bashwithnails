@@ -1,7 +1,7 @@
 # Bash With Nails
 Bash With Nails (rhymes with ruby on rails) is a bash framework written for fun and profit. 
 
-I'm kidding about the profit part.
+I'm kidding about the fun and profit part.
 
 It boasts of:
 
