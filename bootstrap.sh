@@ -20,11 +20,16 @@ function bootstrap_load_module()
         return $ERROR_NOT_FOUND
     fi
     local NAMESPACE=`cat $SCRIPT_DIR/modules/$1 | grep "NAMESPACE=" | cut -d= -f2`
-    bootstrap_check $1
+
+    if [[ $NAMESPACE == "" ]]
+    then
+        echo "Warning: no namespace set in $1, assuming NAMESPACE=global"
+        NAMESPACE="global"
+    fi
+
     local TEMPFILE=`mktemp /tmp/sh-bootstrap-${NAMESPACE}.XXXXXXXXXX`
     bootstrap_check $1
     bootstrap_prepare_module $NAMESPACE $1 > $TEMPFILE
-    bootstrap_check $1
     . $TEMPFILE
     bootstrap_check $1
     rm $TEMPFILE
