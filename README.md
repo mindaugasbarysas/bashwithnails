@@ -17,3 +17,11 @@ It boasts of:
 `./app.sh`
 
 and see the magic happen.
+
+## Why "with nails"?
+
+Because 
+
+![cursed hammer](http://i.imgur.com/6qZcv6j.jpg?fb)
+
+So it's only natural you want nails with that.
