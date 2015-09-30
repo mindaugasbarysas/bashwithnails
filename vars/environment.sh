@@ -2,7 +2,7 @@
 
 DIR=`dirname "${BASH_SOURCE[1]}"`
 SCRIPT_DIR=$DIR
-GLOBAL_REPOSITORY_ADDRESS="https://raw.github.com/mindaugasbarysas/bashwithnails/sample_repo/repofile"
+GLOBAL_REPOSITORY_ADDRESS="https://raw.githubusercontent.com/mindaugasbarysas/bashwithnails/master/sample_repo/repofile"
 GLOBAL_CACHE_DIR="$DIR/cache"
 
 
