@@ -121,7 +121,8 @@ i.e. if the tests cover namespace `my_awesome_namespace`, test module should be 
 and should have a namespace `tests::my_awesome_namespace`.
 
 ** For more information about testing see modules/tests/core/ directory and ./tests.sh  **
-
+(also, 
+[![Build Status](https://travis-ci.org/mindaugasbarysas/bashwithnails.svg?branch=master)](https://travis-ci.org/mindaugasbarysas/bashwithnails))
 ## Internals
 
 ### bootstrap.sh
