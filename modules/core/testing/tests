@@ -1,0 +1,38 @@
+#!/bin/bash
+#NAMESPACE=testing
+
+namespaced FAILURES=()
+namespaced ASSERTIONS=0
+
+function assert(expected actual) {
+    namespaced ASSERTIONS=`expr ${namespaced ASSERTIONS} + 1`
+    if [[ "$expected" != "$actual" ]]
+    then
+        namespaced FAILURES+=("`echo "Assertion failed: expected '$expected', got '$actual'"; bootstrap_trace;`")
+        return $ERROR_BAD_PROGRAMMER
+    fi
+}
+
+function run_tests(namespace) {
+    local MODULE=`bootstrap_module_from_namespace "tests::${namespace}"`
+    local RETURN=0
+    if [[ $MODULE == '' ]]
+    then
+        echo "No tests found for ${namespace}"
+        return $ERROR_BAD_PROGRAMMER
+    fi
+    bootstrap_load_module $MODULE
+    local test_count=0
+    for func_name in `cat $SCRIPT_DIR/$MODULE_DIR/$MODULE | grep -i 'Function test::' | cut -d ' ' -f 2`
+    do
+        tests::${namespace}::$func_name
+        local test_count=`expr $test_count + 1`
+    done
+    if [[ ${#namespaced FAILURES[@]} -gt 0 ]]
+    then
+        RETURN=$ERROR_BAD_PROGRAMMER
+        echo -e "${namespaced FAILURES[@]}"
+    fi
+    echo "Tests run: [ ${test_count} ], assertions: [ ${namespaced ASSERTIONS} ], failures: [ ${#namespaced FAILURES[@]} ]"
+    return $RETURN
+}

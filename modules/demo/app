@@ -2,7 +2,7 @@
 #NAMESPACE=demo
 
 dependencies::depends "core/oop"
-dependencies::depends "test/module"
+dependencies::depends "my_awesome_namespace/module"
 dependencies::register_module "demo/app"
 
 function run(demo_string) {
@@ -13,3 +13,4 @@ function run(demo_string) {
     oop::call 'obj_two' sum "N/A"
     oop::destroy 'obj_two' "N/A"
 }
+
