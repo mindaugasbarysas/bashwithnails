@@ -44,7 +44,7 @@ function bootstrap_prepare_module()
     cat $SCRIPT_DIR/modules/$MODULE | \
     sed -e "s/function\ /function $NAMESPACE::/g" | \
     sed -e "s/namespaced /${NAMESPACE_VAR}__/g" | \
-    sed -e "s/function \(.*\)(\(.*\)) {/function \1 { for varname in \2; do if [[ \$# -ne 0 ]]; then local \${varname}=\"\$1\"; shift; else echo \"Required function parameter '\$varname' not set when calling '\1'\"; fi; done;/g" | \
+    sed -e "s/function \(.*\)(\(.*\)) {/function \1 { for varname in \2; do if [[ \$# -ne 0 ]]; then local \${varname}=\"\$1\"; shift; else echo \"Required function parameter '\$varname' not set when calling '\1'\"; bootstrap_trace; fi; done; if [[ \$# -ne 0 ]]; then echo \"Extra parameters given when calling '\1'\"; bootstrap_trace; fi;/g" | \
     sed -e "s/this::/$NAMESPACE::/g";
 }
 
