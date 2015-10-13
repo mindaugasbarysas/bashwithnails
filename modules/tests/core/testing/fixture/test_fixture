@@ -1,0 +1,14 @@
+#!/bin/bash
+#NAMESPACE=tests::testing::fixture::test_fixture
+
+function test::failure {
+    testing::assert 'false' 'true'
+}
+
+function test::ok {
+    testing::assert 'true' 'true'
+}
+
+function somefunction() {
+    echo "This should never happen."
+}

@@ -1,3 +1,3 @@
 #!/bin/bash
-#NAMESPACE=testmodule
+#NAMESPACE=myawesomenamespacemodule
 echo "Hi, I'm the module automatically downloaded and installed by the dependencies + packager!"

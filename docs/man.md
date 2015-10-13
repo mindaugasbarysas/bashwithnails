@@ -35,6 +35,7 @@ Let's see what's happening here: first we find out where we are, then we load bo
 - Ever wanted to have named parameters in bash functions? Now you can! Just write:`function a(b c) { echo $b $c; }` and cry tears of joy!
 - *My functions share the same name as some other modules' functions!* - I hear ~~myself~~ you cry. Despair no more - write `#NAMESPACE=my::awesome::namespace` after the shebang and your functions will be prepended by `my::awesome::namespace`. To call them internally you can use `this::` also. If you want your variables to be namespaced as well, just write `namespaced MYVAR='...'` and `${namespaced MYVAR}`.
 - Ever wanted to do lame OOP programming in bash? Now you can with `core/oop` module!
+- Some testing functionality.
 - There's always something more ~~nobody needs and I can challenge myself doing~~!
 
 ## Config
@@ -45,9 +46,9 @@ All global vars are stored in `vars/environment.sh`. There are currently 7 of th
 - `SCRIPT_DIR` - because having one script location is simply not enough,
 - `GLOBAL_REPOSITORY_ADDRESS` - that's where the (default) repository is defined,
 - `GLOBAL_CACHE_DIR` - where we keep our repository cache.
-- `ERROR_NOT_FOUND` - error constant when something's not found. That's it. 404.
-- `ERROR_BAD_PROGRAMMER` - developer screwed up. 500. Not used yet.
-- `ERROR_BAD_USER` - user has asked something that is simply not acceptable. 406.
+- `ERROR_NOT_FOUND` - error constant when something's not found. That's it.
+- `ERROR_BAD_PROGRAMMER` - developer screwed up. Not used yet.
+- `ERROR_BAD_USER` - user has asked something that is simply not acceptable.
 
 ## Core Modules
 
@@ -55,6 +56,7 @@ There currently are three modules designed to make your life ~~miserable~~ easy:
 - `core/dependencies`
 - `core/packager`
 - `core/oop`
+- `core/testing/tests`
 
 ### core/dependencies
 
@@ -100,6 +102,25 @@ oop
 `destroy($object $args)` - equivalent to `call $object '__destruct' $args`. $args is once again, separated with `,`
 
 **NB** (and raise an issue to myself): you better not be passing any args with ',' in them now! (will remove **NB** when it is no longer necessary) **NB**
+
+### core/testing/tests
+
+Provides testing support. Can automatically run tests for a namespace. Unit tests are nice. Maybe I'll cover bashwithnails with unit tests someday.
+
+#### Namespace
+testing
+
+#### Functions
+`assert($expected $actual)` - checks if `$expected` equals `$actual`. Logs traces and failed expectations sulkingly.
+
+`run_tests($namespace)` - loads tests for `$namespace` if they exist. Complains if they don't. 
+Prints out failures and statistics (Tests run, assertions, failures). 
+Looks for tests in modules/tests directory.
+Tests' namespace should be prefixed with `tests::`, 
+i.e. if the tests cover namespace `my_awesome_namespace`, test module should be located in `modules/tests/my_awesome_namespace`
+and should have a namespace `tests::my_awesome_namespace`.
+
+** For more information about testing see modules/tests/core/ directory and ./tests.sh  **
 
 ## Internals
 

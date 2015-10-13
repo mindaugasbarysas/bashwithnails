@@ -19,7 +19,7 @@ function bootstrap_load_module()
     then
         return $ERROR_NOT_FOUND
     fi
-    local NAMESPACE=`cat $SCRIPT_DIR/modules/$1 | grep "NAMESPACE=" | cut -d= -f2`
+    local NAMESPACE=`cat $SCRIPT_DIR/$MODULE_DIR/$1 | grep "NAMESPACE=" | cut -d= -f2`
 
     if [[ $NAMESPACE == "" ]]
     then
@@ -41,7 +41,7 @@ function bootstrap_prepare_module()
     local NAMESPACE=$1
     local NAMESPACE_VAR=${NAMESPACE//::/__}
     local MODULE=$2
-    cat $SCRIPT_DIR/modules/$MODULE | \
+    cat $SCRIPT_DIR/$MODULE_DIR/$MODULE | \
     sed -e "s/function\ /function $NAMESPACE::/g" | \
     sed -e "s/namespaced /${NAMESPACE_VAR}__/g" | \
     sed -e "s/function \(.*\)(\(.*\)) {/function \1 { for varname in \2; do if [[ \$# -ne 0 ]]; then local \${varname}=\"\$1\"; shift; else echo \"Required function parameter '\$varname' not set when calling '\1'\"; fi; done;/g" | \
@@ -50,12 +50,12 @@ function bootstrap_prepare_module()
 
 function bootstrap_module_from_namespace()
 {
-    grep -Re "#NAMESPACE=${1}$" $SCRIPT_DIR/modules/* | cut -d: -f 1 | sed -e "s/\(.*\)modules\///g"
+    grep -Re "#NAMESPACE=${1}$" $SCRIPT_DIR/$MODULE_DIR/* | cut -d: -f 1 | sed -e "s/\(.*\)$MODULE_DIR\///g"
 }
 
 function bootstrap_load_namespace()
 {
-    for module in `grep -Re "NAMESPACE=${1}$" $SCRIPT_DIR/modules/* | cut -d: -f 1 | sed -e "s/$SCRIPT_DIR\/modules\//g"`
+    for module in `grep -Re "NAMESPACE=${1}$" $SCRIPT_DIR/$MODULE_DIR/* | cut -d: -f 1 | sed -e "s/$SCRIPT_DIR\/$MODULE_DIR\//g"`
     do
         bootstrap_load_module $module
     done

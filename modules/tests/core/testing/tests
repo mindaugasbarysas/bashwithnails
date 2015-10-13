@@ -1,0 +1,23 @@
+#!/bin/bash
+#NAMESPACE=tests::testing
+
+function test::success {
+    testing::assert 'true' 'true'
+}
+
+function test::failure {
+    local result="`testing::run_tests testing::fixture::test_fixture`"
+    local result_tests=`echo "$result" | grep 'Tests run:'`
+    local result_assert=`echo "$result" | grep 'Assertion failed:'`
+    testing::assert "Tests run: [ 2 ], assertions: [ 3 ], failures: [ 1 ]" "$result_tests"
+    testing::assert "Assertion failed: expected 'false', got 'true'" "$result_assert"
+}
+
+function test::no_tests {
+    testing::assert 'No tests found for tests::nomodule' "`testing::run_tests tests::nomodule`"
+}
+
+function test::testing_ran {
+    testing::assert ${FUNCNAME[1]} 'testing::run_tests'
+}
+
