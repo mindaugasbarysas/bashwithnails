@@ -18,28 +18,25 @@ function new(namespace constructor_args object_name) {
     . $TEMPFILE
     rm $TEMPFILE
     namespaced IDLIST+=($ID)
-    constructor_args=${constructor_args//,/\ }
-    eval "$ID::__construct $constructor_args"
+    eval "$ID::__construct ${constructor_args}"
 }
 
 function call(object function_name args) {
-    args=${args//,/\ }
     for obj in ${namespaced IDLIST[@]}
     do
       if [[ $obj =~ $object ]]
       then
-        eval "$obj::$function_name $args"
+        eval "$obj::$function_name ${args}"
       fi
     done
 }
 
 function destroy(object args) {
-    args=${args//,/\ }
     for obj in ${namespaced IDLIST[@]}
     do
       if [[ $obj =~ $object ]]
       then
-        eval "$obj::__destruct $args"
+        eval "$obj::__destruct ${args}"
       fi
     done
     local newIDLIST=()

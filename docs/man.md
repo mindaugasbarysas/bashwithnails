@@ -93,13 +93,20 @@ Provides "object" support. Of sorts. Because somebody asked me if that's possibl
 oop
 
 #### Functions
-`new($namespace $constructor_args $object_name)` - creates new "object" of $namespace type, calls its' constructor (`__construct`) with $constructor_args separated with `,`, assigns it an $object_name;
+`new($namespace $constructor_args $object_name)` - creates new "object" of $namespace type, calls its' constructor (`__construct`) with $constructor_args in a strictly quoted string with `[space]` as a separator, assigns it an $object_name;
 
-`call($object $function_name $args)` - calls a "method" ($function_name) of an "object" with name $object with arguments ($args) separated with `,`
+`call($object $function_name $args)` - calls a "method" ($function_name) of an "object" with name $object with arguments ($args) in a strictly quoted string with `[space]` as a separator
 
-`destroy($object $args)` - equivalent to `call $object '__destruct' $args`. $args is once again, separated with `,`
+`destroy($object $args)` - equivalent to `call $object '__destruct' $args`. $args is once again, in a strictly quoted string with `[space]` as a separator
 
-**NB** (and raise an issue to myself): you better not be passing any args with ',' in them now! (will remove **NB** when it is no longer necessary) **NB**
+Since this is probably not very clear, here's an example, lifted straight from demo app:
+```
+    oop::new oop_demo $'$\'1 a a a\' 2' 'obj_one'
+    oop::new oop_demo '3 4' 'obj_two'
+    oop::call 'obj_one' sum "N/A"
+    oop::call 'obj_two' sum "N/A"
+    oop::destroy 'obj_two' "N/A"
+```
 
 ## Internals
 
