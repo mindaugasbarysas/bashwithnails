@@ -8,31 +8,39 @@ function assert(expected actual) {
     namespaced ASSERTIONS=`expr ${namespaced ASSERTIONS} + 1`
     if [[ "$expected" != "$actual" ]]
     then
-        namespaced FAILURES+=("`echo "Assertion failed: expected '$expected', got '$actual'"; bootstrap_trace;`")
+        namespaced FAILURES+=("`echo -e "\nAssertion failed: expected '$expected', got '$actual'"; bootstrap_trace;`")
         return $ERROR_BAD_PROGRAMMER
     fi
 }
 
-function run_tests(namespace) {
-    local MODULE=`bootstrap_module_from_namespace "tests::${namespace}"`
-    local RETURN=0
-    if [[ $MODULE == '' ]]
-    then
-        echo "No tests found for ${namespace}"
-        return $ERROR_BAD_PROGRAMMER
-    fi
-    bootstrap_load_module $MODULE
+function run_tests(namespaces) {
     local test_count=0
-    for func_name in `cat $SCRIPT_DIR/$MODULE_DIR/$MODULE | grep -i 'Function test::' | cut -d ' ' -f 2`
+    for namespace in $namespaces
     do
-        tests::${namespace}::$func_name
-        local test_count=`expr $test_count + 1`
+        local MODULE=`bootstrap_module_from_namespace "tests::${namespace}"`
+        local RETURN=0
+        if [[ $MODULE == '' ]]
+        then
+            echo "No tests found for ${namespace}"
+            return $ERROR_BAD_PROGRAMMER
+        fi
+        for mod in $MODULE
+        do
+            bootstrap_load_module "$mod"
+            for func_name in `cat $SCRIPT_DIR/$MODULE_DIR/$mod | grep -i 'Function test::' | cut -d ' ' -f 2`
+            do
+                tests::${namespace}::$func_name
+                local test_count=`expr $test_count + 1`
+            done
+        done
     done
+
     if [[ ${#namespaced FAILURES[@]} -gt 0 ]]
     then
         RETURN=$ERROR_BAD_PROGRAMMER
         echo -e "${namespaced FAILURES[@]}"
     fi
+
     echo "Tests run: [ ${test_count} ], assertions: [ ${namespaced ASSERTIONS} ], failures: [ ${#namespaced FAILURES[@]} ]"
     return $RETURN
 }

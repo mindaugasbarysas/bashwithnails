@@ -1,0 +1,6 @@
+#!/bin/bash
+#NAMESPACE=tests::testing::fixture::test_fixture2
+
+function test::ok1 {
+    testing::assert 'true' 'true'
+}
