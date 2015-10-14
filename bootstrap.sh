@@ -15,7 +15,7 @@ function bootstrap_load_module()
     then
         bootstrap_load_environment
     fi
-    if [[ ! -f $SCRIPT_DIR/modules/$1 ]]
+    if [[ ! -f $SCRIPT_DIR/$MODULE_DIR/$1 ]]
     then
         return $ERROR_NOT_FOUND
     fi

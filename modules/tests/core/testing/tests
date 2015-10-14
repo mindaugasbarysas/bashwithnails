@@ -6,10 +6,10 @@ function test::success {
 }
 
 function test::failure {
-    local result="`testing::run_tests testing::fixture::test_fixture`"
+    local result=`testing::run_tests 'testing::fixture::test_fixture testing::fixture::test_fixture2'`
     local result_tests=`echo "$result" | grep 'Tests run:'`
     local result_assert=`echo "$result" | grep 'Assertion failed:'`
-    testing::assert "Tests run: [ 2 ], assertions: [ 3 ], failures: [ 1 ]" "$result_tests"
+    testing::assert "Tests run: [ 4 ], assertions: [ 5 ], failures: [ 1 ]" "$result_tests"
     testing::assert "Assertion failed: expected 'false', got 'true'" "$result_assert"
 }
 
