@@ -43,7 +43,7 @@ function get_module(module_name) {
         then
             filename=$repo
         else
-            local filename=${namespaced CACHE_DIR}/`echo "${repo}" | md5`
+            local filename=${namespaced CACHE_DIR}/`echo "${repo}" | $MD5 | cut -d\  -f1`
             if [[ ! -f $filename ]]
             then
                     ${namespaced GETTER_FUNC} ${namespaced REPO_ADDRESS} $filename
