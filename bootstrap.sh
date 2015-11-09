@@ -26,8 +26,7 @@ function bootstrap_load_module()
         echo "Warning: no namespace set in $1, assuming NAMESPACE=global"
         NAMESPACE="global"
     fi
-
-    local TEMPFILE=`mktemp /tmp/sh-bootstrap-${NAMESPACE}.XXXXXXXXXX`
+    local TEMPFILE=`mktemp /tmp/shbs:${NAMESPACE}-${1//\//\~}.XXXXXXXXXX`
     bootstrap_check $1
     bootstrap_prepare_module $NAMESPACE $1 > $TEMPFILE
     . $TEMPFILE
