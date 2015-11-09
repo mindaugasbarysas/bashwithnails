@@ -44,3 +44,5 @@ function run_tests(namespaces) {
     echo "Tests run: [ ${test_count} ], assertions: [ ${namespaced ASSERTIONS} ], failures: [ ${#namespaced FAILURES[@]} ]"
     return $RETURN
 }
+
+dependencies::register_module "core/testing/tests"

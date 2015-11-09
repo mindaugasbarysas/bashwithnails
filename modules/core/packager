@@ -5,6 +5,7 @@ dependencies::register_module "core/packager"
 
 namespaced REPO_ADDRESS=$GLOBAL_REPOSITORY_ADDRESS;
 namespaced CACHE_DIR=$GLOBAL_CACHE_DIR;
+namespaced GETTER_FUNC=this::wget_getter
 
 function set_repository(repository_address) {
     namespaced REPO_ADDRESS=$repository_address;
@@ -14,43 +15,74 @@ function set_cache_dir(cache_dir) {
     namespaced CACHE_DIR=$cache_dir;
 }
 
+function set_url_getter_function(function_name) {
+    reflected_function=`type $function_name`
+    if [[ `echo "$reflected_function" | grep -c 'is a function'` -eq 1 ]]
+    then
+        if [[ `echo "$reflected_function" | grep -c 'in url destination'` -eq 1 ]]
+        then
+            namespaced GETTER_FUNC=$function_name
+        else
+            echo "$function_name does not have parameters (url, destination) or they are in wrong order!"
+        fi
+    else
+        echo "$function_name is not a function!"
+    fi
+}
+
+function wget_getter(url destination) {
+    wget -O $destination $url
+    return $?
+}
+
 function get_module(module_name) {
     module_name=${module_name//./}
-    local filename=${namespaced CACHE_DIR}/`echo "${namespaced REPO_ADDRESS}" | md5`
-    if [[ ! -f $filename ]]
-    then
-        wget -O $filename ${namespaced REPO_ADDRESS}
-        if [[ $? -ne 0 ]]
+    for repo in ${namespaced REPO_ADDRESS}
+    do
+        if [[ -f ${repo} ]]
         then
-            rm $filename
-            echo "repository not found at ${namespaced REPO_ADDRESS}"
-            bootstrap_trace
-            exit $ERROR_NOT_FOUND
-        fi
-    fi
-
-    local mod_place=`cat $filename | grep -w "$module_name" | cut -d@ -f 2-`
-
-    if [[ $mod_place != '' ]]
-    then
-        local MOD_DIR=`echo "$SCRIPT_DIR/$MODULE_DIR/$module_name" | rev |cut -d/ -f2- | rev`
-        local cwd="$SCRIPT_DIR"
-        for dir in ${MOD_DIR//\// }
-        do
-            if [[ $dir != $SCRIPT_DIR ]]
+            filename=$repo
+        else
+            local filename=${namespaced CACHE_DIR}/`echo "${repo}" | md5`
+            if [[ ! -f $filename ]]
             then
-                cwd="$cwd/$dir"
-                if [[ ! -e $cwd ]]
-                then
-                    mkdir "$cwd"
-                fi
+                    ${namespaced GETTER_FUNC} ${namespaced REPO_ADDRESS} $filename
+                    if [[ $? -ne 0 ]]
+                    then
+                        rm $filename
+                        echo "repository not found at ${namespaced REPO_ADDRESS}"
+                        bootstrap_trace
+                        exit $ERROR_NOT_FOUND
+                    fi
             fi
-        done
-        wget -O $SCRIPT_DIR/$MODULE_DIR/$module_name $mod_place
-    else
-        echo "module '$module_name' not found in repository"
-        exit $ERROR_NOT_FOUND
-    fi
+        fi
+        local mod_place=`cat $filename | grep -w "$module_name" | cut -d@ -f 2-`
+
+        if [[ $mod_place != '' ]]
+        then
+            local MOD_DIR=`echo "$SCRIPT_DIR/$MODULE_DIR/$module_name" | rev |cut -d/ -f2- | rev`
+            local cwd="$SCRIPT_DIR"
+            for dir in ${MOD_DIR//\// }
+            do
+                if [[ $dir != $SCRIPT_DIR ]]
+                then
+                    cwd="$cwd/$dir"
+                    if [[ ! -e $cwd ]]
+                    then
+                        mkdir "$cwd"
+                    fi
+                fi
+            done
+
+            ${namespaced GETTER_FUNC} $mod_place $SCRIPT_DIR/$MODULE_DIR/$module_name
+            if [[ $? -eq 0 ]]
+            then
+                return 0
+            fi
+        fi
+    done
+    echo "module '$module_name' not found in repositories ${namespaced REPO_ADDRESS}"
+    exit $ERROR_NOT_FOUND
 }
 
 function cleanup {
