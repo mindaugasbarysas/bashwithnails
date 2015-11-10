@@ -2,3 +2,4 @@ language: bash
 
 script:
     - bash tests.sh
+    - bash test-coverage.sh summary

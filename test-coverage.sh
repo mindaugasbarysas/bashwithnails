@@ -15,7 +15,7 @@ IGNORE_COVERAGE="tests/"
 bootstrap_load_module "core/testing/coverage"
 
 case $1 in
-    'verbose') testing::coverage_verbose "tests.sh" "tests/";;
-    'summary') testing::coverage_summary "tests.sh" "tests/";;
+    'verbose') testing::coverage_verbose "tests.sh" "$IGNORE_COVERAGE";;
+    'summary') testing::coverage_summary "tests.sh" "$IGNORE_COVERAGE";;
     *) echo "Usage: ./test-coverage.sh verbose|summary";;
 esac
