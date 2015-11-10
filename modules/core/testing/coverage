@@ -6,7 +6,7 @@ namespaced ASSUME_COVERED=0
 
 function get_coverage(testfile) {
     export PS4='D: ${BASH_SOURCE} ${LINENO} +++ '
-    namespaced COVERAGE_DATA=`/bin/bash -xv $testfile 2>&1| grep '^D:' | cut -d\+ -f1 | cut -d- -f2- | sed -e 's/~/\//g' | grep -v "^D:" | sort | uniq |\
+    namespaced COVERAGE_DATA=`/bin/bash -xv $testfile 2>&1| grep '^D*:' | cut -d\+ -f1 | cut -d- -f2- | sed -e 's/~/\//g' | grep -v "^D*:" | sort | uniq |\
     sed -e 's/\.\(..........\) / /g'`
 
 }

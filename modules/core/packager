@@ -16,25 +16,25 @@ function set_cache_dir(cache_dir) {
 }
 
 function set_url_getter_function(function_name) {
-    reflected_function=`type $function_name`
+    reflected_function=`type $function_name 2>&1`
     if [[ `echo "$reflected_function" | grep -c 'is a function'` -eq 1 ]]
     then
         if [[ `echo "$reflected_function" | grep -c 'in url destination'` -eq 1 ]]
         then
             namespaced GETTER_FUNC=$function_name
         else
-            echo "$function_name does not have parameters (url, destination) or they are in wrong order!"
+            echo "$function_name() does not have parameters (url, destination) or they are in wrong order!"
         fi
     else
         echo "$function_name is not a function!"
     fi
 }
-
+#@covered-begin (untestable)
 function wget_getter(url destination) {
     wget -O $destination $url
     return $?
 }
-
+#@covered-end
 function get_module(module_name) {
     module_name=${module_name//./}
     for repo in ${namespaced REPO_ADDRESS}
@@ -52,7 +52,7 @@ function get_module(module_name) {
                         rm $filename
                         echo "repository not found at ${namespaced REPO_ADDRESS}"
                         bootstrap_trace
-                        exit $ERROR_NOT_FOUND
+                        return $ERROR_NOT_FOUND
                     fi
             fi
         fi
@@ -82,12 +82,6 @@ function get_module(module_name) {
         fi
     done
     echo "module '$module_name' not found in repositories ${namespaced REPO_ADDRESS}"
-    exit $ERROR_NOT_FOUND
+    return $ERROR_NOT_FOUND
 }
 
-function cleanup {
-    for mod in `find -f $SCRIPT_DIR/modules -type f | sed "s;$SCRIPT_DIR/$MODULE_DIR/;;g"`
-    do
-        true;
-    done
-}
