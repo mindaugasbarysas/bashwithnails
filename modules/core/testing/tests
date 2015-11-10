@@ -1,15 +1,18 @@
 #!/bin/bash
 #NAMESPACE=testing
-
+#@covered-begin
 namespaced FAILURES=()
 namespaced ASSERTIONS=0
+#@covered-end
 
 function assert(expected actual) {
     namespaced ASSERTIONS=`expr ${namespaced ASSERTIONS} + 1`
     if [[ "$expected" != "$actual" ]]
     then
+        #@covered-begin tests::testing
         namespaced FAILURES+=("`echo -e "\nAssertion failed: expected '$expected', got '$actual'"; bootstrap_trace;`")
         return $ERROR_BAD_PROGRAMMER
+        #@covered-end
     fi
 }
 
@@ -21,8 +24,10 @@ function run_tests(namespaces) {
         local RETURN=0
         if [[ $MODULE == '' ]]
         then
+            #@covered-begin tests::testing::test::no_tests
             echo "No tests found for ${namespace}"
             return $ERROR_BAD_PROGRAMMER
+            #@covered-end
         fi
         for mod in $MODULE
         do
@@ -37,12 +42,15 @@ function run_tests(namespaces) {
 
     if [[ ${#namespaced FAILURES[@]} -gt 0 ]]
     then
+        #@covered-begin tests::testing::test::failure
         RETURN=$ERROR_BAD_PROGRAMMER
         echo -e "${namespaced FAILURES[@]}"
+        #@covered-end
     fi
 
     echo "Tests run: [ ${test_count} ], assertions: [ ${namespaced ASSERTIONS} ], failures: [ ${#namespaced FAILURES[@]} ]"
     return $RETURN
 }
-
+#@covered-begin
 dependencies::register_module "core/testing/tests"
+#@covered-end
