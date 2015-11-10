@@ -24,6 +24,12 @@ function depends(module) {
     fi
 
     packager::get_module $module
+    val=$?
+    if [[ $val != 0 ]]
+    then
+        exit $val
+    fi
+
     bootstrap_load_module $module
     if [[ $? == 0 ]]
     then

@@ -1,8 +1,9 @@
 #!/bin/bash
 #NAMESPACE=testing
-
+#@covered-begin
 namespaced FAILURES=()
 namespaced ASSERTIONS=0
+#@covered-end
 
 function assert(expected actual) {
     namespaced ASSERTIONS=`expr ${namespaced ASSERTIONS} + 1`
@@ -44,3 +45,5 @@ function run_tests(namespaces) {
     echo "Tests run: [ ${test_count} ], assertions: [ ${namespaced ASSERTIONS} ], failures: [ ${#namespaced FAILURES[@]} ]"
     return $RETURN
 }
+
+dependencies::register_module "core/testing/tests"

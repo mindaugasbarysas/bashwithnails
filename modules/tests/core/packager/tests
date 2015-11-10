@@ -1,0 +1,95 @@
+#!/bin/bash
+#NAMESPACE=tests::packager
+
+namespaced fs_mock_getter_called=0
+namespaced url_mock_getter_called=0
+
+function mock_getter_local_fs(url destination) {
+    let namespaced fs_mock_getter_called=${namespaced fs_mock_getter_called}+1
+    if [[ $url == 'test-url' ]]
+    then
+        rm -r ${SCRIPT_DIR}/${MODULE_DIR}/test_unique_test_namespace/
+        testing::assert "${SCRIPT_DIR}/${MODULE_DIR}/test_unique_test_namespace/module/submodule" $destination
+    fi
+    return 0
+}
+
+function mock_getter_url(url destination) {
+    let namespaced url_mock_getter_called=${namespaced url_mock_getter_called}+1
+    if [[ $url == 'http://test.test/test/test' ]]
+    then
+        testing::assert "${SCRIPT_DIR}/${MODULE_DIR}/tests/core/packager/fixture/cache/4e25ac61eae6c410ebb15d1531af8b91" $destination
+        echo "test_unique_test_namespace/module/submodule@test-url" > ${SCRIPT_DIR}/${MODULE_DIR}/tests/core/packager/fixture/cache/4e25ac61eae6c410ebb15d1531af8b91
+    fi
+    if [[ $url == 'test-url' ]]
+    then
+        rm -r ${SCRIPT_DIR}/${MODULE_DIR}/test_unique_test_namespace/
+        rm ${SCRIPT_DIR}/${MODULE_DIR}/tests/core/packager/fixture/cache/4e25ac61eae6c410ebb15d1531af8b91
+        testing::assert "${SCRIPT_DIR}/${MODULE_DIR}/test_unique_test_namespace/module/submodule" $destination
+    fi
+    if [[ $url == 'bad-url' ]]
+    then
+        return 1
+    fi
+    return 0
+}
+
+function mock_function
+{
+    return 0
+}
+
+function test::custom_fs_repo
+{
+    namespaced fs_mock_getter_called=0
+    packager::set_repository "${SCRIPT_DIR}/${MODULE_DIR}/tests/core/packager/fixture/test_repo"
+    packager::set_cache_dir "${SCRIPT_DIR}/${MODULE_DIR}/tests/core/packager/fixture/cache"
+    packager::set_url_getter_function mock_getter_local_fs
+    packager::get_module "test_unique_test_namespace/module/submodule"
+    testing::assert 1 ${namespaced fs_mock_getter_called}
+}
+
+function test::custom_remote_repo
+{
+    namespaced url_mock_getter_called=0
+    packager::set_repository "http://test.test/test/test"
+    packager::set_cache_dir "${SCRIPT_DIR}/${MODULE_DIR}/tests/core/packager/fixture/cache"
+    packager::set_url_getter_function mock_getter_url
+    packager::get_module "test_unique_test_namespace/module/submodule"
+    testing::assert 2 ${namespaced url_mock_getter_called}
+}
+
+function test::custom_remote_repo_cached
+{
+    namespaced url_mock_getter_called=0
+    echo "test_unique_test_namespace/module/submodule@test-url" > ${SCRIPT_DIR}/${MODULE_DIR}/tests/core/packager/fixture/cache/4e25ac61eae6c410ebb15d1531af8b91
+    packager::set_repository "http://test.test/test/test"
+    packager::set_cache_dir "${SCRIPT_DIR}/${MODULE_DIR}/tests/core/packager/fixture/cache"
+    packager::set_url_getter_function mock_getter_url
+    packager::get_module "test_unique_test_namespace/module/submodule"
+    testing::assert 1 ${namespaced url_mock_getter_called}
+}
+
+function test::bad_getter_function
+{
+    testing::assert "this::mock_function() does not have parameters (url, destination) or they are in wrong order!" "`packager::set_url_getter_function mock_function`"
+    testing::assert "tests::packager::test_var is not a function!" "`packager::set_url_getter_function test_var`"
+}
+
+function test::bad_repository_address
+{
+    namespaced url_mock_getter_called=0
+    packager::set_repository "bad-url"
+    packager::set_cache_dir "${SCRIPT_DIR}/${MODULE_DIR}/tests/core/packager/fixture/cache"
+    packager::set_url_getter_function mock_getter_url
+    output=`packager::get_module "test_unique_test_namespace/module/submodule" 2>&1`
+    retval=$?
+    testing::assert $ERROR_NOT_FOUND $retval
+    testing::assert 1 `echo "$output" | grep -c 'tests/core/packager/fixture/cache'`
+    packager::set_repository "http://test.test/test/test"
+    output=`packager::get_module "bad_module"`
+    retval=$?
+    rm ${SCRIPT_DIR}/${MODULE_DIR}/tests/core/packager/fixture/cache/4e25ac61eae6c410ebb15d1531af8b91
+    testing::assert $ERROR_NOT_FOUND $retval
+    testing::assert 1 `echo "$output" | grep -c 'bad_module'`
+}

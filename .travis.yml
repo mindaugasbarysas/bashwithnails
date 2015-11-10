@@ -1,4 +1,8 @@
 language: bash
 
+before_install:
+    - sudo apt-get install bc
+
 script:
     - bash tests.sh
+    - bash test-coverage.sh summary
