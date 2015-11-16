@@ -29,12 +29,15 @@ function set_url_getter_function(function_name) {
         echo "$function_name is not a function!"
     fi
 }
+
 #@covered-begin (untestable)
 function wget_getter(url destination) {
     wget -O $destination $url
     return $?
-}
 #@covered-end
+}
+
+
 function get_module(module_name) {
     module_name=${module_name//./}
     for repo in ${namespaced REPO_ADDRESS}
@@ -84,4 +87,3 @@ function get_module(module_name) {
     echo "module '$module_name' not found in repositories ${namespaced REPO_ADDRESS}"
     return $ERROR_NOT_FOUND
 }
-
