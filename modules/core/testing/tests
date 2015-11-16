@@ -1,9 +1,8 @@
 #!/bin/bash
 #NAMESPACE=testing
-#@covered-begin
+
 namespaced FAILURES=()
 namespaced ASSERTIONS=0
-#@covered-end
 
 function assert(expected actual) {
     namespaced ASSERTIONS=`expr ${namespaced ASSERTIONS} + 1`

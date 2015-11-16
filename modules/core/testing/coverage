@@ -3,6 +3,7 @@
 
 namespaced COVERAGE_DATA=''
 namespaced ASSUME_COVERED=0
+namespaced UNCOVERABLES='^$ ^# ^{ ^} ^done$ ^then$ ^else$ ^fi$ ^do$'
 
 function get_coverage(testfile) {
     export PS4='D: ${BASH_SOURCE} ${LINENO} +++ '
@@ -12,16 +13,11 @@ function get_coverage(testfile) {
 }
 
 function get_uncoverable(line) {
-    local grepfound=`echo $line | grep -c '^$'`
-    let grepfound=$grepfound+`echo "$line" | sed -e "s/ //g" | grep -c '^#'`
-    let grepfound=$grepfound+`echo "$line" | sed -e "s/ //g"| grep -c '^{'`
-    let grepfound=$grepfound+`echo "$line" | sed -e "s/ //g"| grep -c '^}'`
-    let grepfound=$grepfound+`echo "$line" | sed -e "s/ //g"| grep -c '^function'`
-    let grepfound=$grepfound+`echo "$line" | sed -e "s/ //g"| grep -c '^do$'`
-    let grepfound=$grepfound+`echo "$line" | sed -e "s/ //g"| grep -c '^done$'`
-    let grepfound=$grepfound+`echo "$line" | sed -e "s/ //g"| grep -c '^then$'`
-    let grepfound=$grepfound+`echo "$line" | sed -e "s/ //g"| grep -c '^else$'`
-    let grepfound=$grepfound+`echo "$line" | sed -e "s/ //g"| grep -c '^fi$'`
+    local grepfound=0
+    for uncase in ${namespaced UNCOVERABLES}
+    do
+        let grepfound=$grepfound+`echo "$line" | sed -e "s/ //g" | grep -c "$uncase"`
+    done
     echo $grepfound
 }
 
@@ -45,6 +41,12 @@ function is_covered(file line_num) {
     fi
 }
 
+function print_stats(filename total covered uncoverable) {
+    echo "$filename:"
+    local PERCENT=`echo "scale=2; (${covered}/(${total}-${uncoverable}))*100" | bc`
+    echo " Total lines: $total  / Uncoverable: $uncoverable / Covered: $covered ($PERCENT%) "
+}
+
 function coverage_verbose(testfile ignore_file) {
     this::get_coverage $testfile
 
@@ -53,10 +55,10 @@ function coverage_verbose(testfile ignore_file) {
     for file in $uniq_fn
     do
         echo Code coverage of: $SCRIPT_DIR/$MODULE_DIR/$file
-        LINE_NO=0
-        LN_TOTAL=0
-        LN_COVERED=0
-        LN_UNCOVERABLE=0
+        local LINE_NO=0
+        local LN_TOTAL=0
+        local LN_COVERED=0
+        local LN_UNCOVERABLE=0
         while IFS='' read -r line ||  [[ -n "$line" ]]; do
             let LINE_NO=$LINE_NO+1
             this::coverage_toggle "$line"
@@ -75,24 +77,22 @@ function coverage_verbose(testfile ignore_file) {
             fi
         let LN_TOTAL=$LN_TOTAL+1
         done < $SCRIPT_DIR/$MODULE_DIR/$file
-        PERCENT=`echo "scale=2; (${LN_COVERED}/(${LN_TOTAL}-${LN_UNCOVERABLE}))*100" | bc`
-        echo "Total lines: $LN_TOTAL  / Uncoverable: $LN_UNCOVERABLE / Covered: $LN_COVERED ($PERCENT%) "
+        this::print_stats $SCRIPT_DIR/$MODULE_DIR/$file $LN_TOTAL $LN_COVERED $LN_UNCOVERABLE
     done
 }
 
 
-function coverage_summary(testfile ignore_file) {
+function coverage_summary_exact(testfile ignore_file) {
     this::get_coverage $testfile
 
     uniq_fn=`echo "${namespaced COVERAGE_DATA}" | cut -d\  -f1 | uniq | grep -v $ignore_file`
 
     for file in $uniq_fn
     do
-        echo Code coverage of: $SCRIPT_DIR/$MODULE_DIR/$file
-        LINE_NO=0
-        LN_TOTAL=0
-        LN_COVERED=0
-        LN_UNCOVERABLE=0
+        local LINE_NO=0
+        local LN_TOTAL=0
+        local LN_COVERED=0
+        local LN_UNCOVERABLE=0
         while IFS='' read -r line ||  [[ -n "$line" ]]; do
             let LINE_NO=$LINE_NO+1
             this::coverage_toggle "$line"
@@ -107,8 +107,27 @@ function coverage_summary(testfile ignore_file) {
             fi
         let LN_TOTAL=$LN_TOTAL+1
         done < $SCRIPT_DIR/$MODULE_DIR/$file
-        PERCENT=`echo "scale=2; (${LN_COVERED}/(${LN_TOTAL}-${LN_UNCOVERABLE}))*100" | bc`
-        echo "Total lines: $LN_TOTAL  / Uncoverable: $LN_UNCOVERABLE / Covered: $LN_COVERED ($PERCENT%) "
+        this::print_stats $SCRIPT_DIR/$MODULE_DIR/$file $LN_TOTAL $LN_COVERED $LN_UNCOVERABLE
     done
 }
 
+function coverage_summary_fast(testfile ignore_file) {
+    this::get_coverage $testfile
+
+    uniq_fn=`echo "${namespaced COVERAGE_DATA}" | cut -d\  -f1 | uniq | grep -v $ignore_file`
+
+    for file in $uniq_fn
+    do
+        local fcontent=`cat $SCRIPT_DIR/$MODULE_DIR/$file | sed -e 's/ //g'`
+        local LN_COVERED=`echo "${namespaced COVERAGE_DATA}" | grep "^${file} " | cut -d\  -f2 | grep -c "^"`
+        local LN_ANOT=`echo "$fcontent" | sed -n '/#@covered-begin/,/#@covered-end/ p' | wc -l | sed -e 's/ //g'`
+        if [[ LN_ANOT -gt 0 ]]
+        then
+            let LN_ANOT=$LN_ANOT-2
+        fi
+        let LN_COVERED=$LN_COVERED+$LN_ANOT
+        local LN_TOTAL=`echo "$fcontent" | wc -l | sed -e 's/ //g'`
+        local LN_UNCOVERABLE=`this::get_uncoverable "$fcontent"`
+        this::print_stats $SCRIPT_DIR/$MODULE_DIR/$file $LN_TOTAL $LN_COVERED $LN_UNCOVERABLE
+    done
+}
