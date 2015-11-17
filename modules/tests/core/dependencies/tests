@@ -1,0 +1,57 @@
+#!/bin/bash
+#NAMESPACE=tests::dependencies
+
+# a LARGE PART of dependencies module is covered by other test cases (as they depend on it and would break
+# catastrophically should dependencies fail). Tests in this test suite cover the edge cases which are not
+# run by the aforementioned other test cases.
+
+namespaced bootstrap_called=0
+
+function successful_packager(module_name) {
+    return 0;
+}
+
+function not_found_packager(module_name) {
+    return $ERROR_NOT_FOUND;
+}
+
+function bootstrap_loader_mock_first_fail() {
+    if [[ ${namespaced bootstrap_called} -eq 0 ]]
+    then
+        namespaced bootstrap_called=1
+        return $ERROR_NOT_FOUND
+    fi
+    return 0
+}
+
+
+function test::loaded_module
+{
+    dependencies::depends 'core/dependencies'
+    testing::assert 0 $?
+}
+
+
+function test::load_bad_module
+{
+    result=`dependencies::set_packager_getter "this::not_found_packager"; dependencies::depends 'bad/module'`
+    testing::assert $ERROR_NOT_FOUND $?
+}
+
+function test::get_module_ok_load_module_ok
+{
+    dependencies::set_packager_getter this::successful_packager
+    dependencies::set_bootstrap_loader this::bootstrap_loader_mock_first_fail
+    dependencies::depends 'good/module'
+    testing::assert 0 $?
+}
+
+function test::get_module_ok_load_module_fail
+{
+    namespaced bootstrap_called=0
+    dependencies::set_packager_getter this::successful_packager
+    dependencies::set_bootstrap_loader this::not_found_packager
+    result=`dependencies::depends 'other_bad/module'`
+    testing::assert $ERROR_NOT_FOUND $?
+    testing::assert 1 `echo "$result" | grep -c "Dependency unmet: other_bad/module is not loaded"`
+}
