@@ -16,17 +16,11 @@ function set_cache_dir(cache_dir) {
 }
 
 function set_url_getter_function(function_name) {
-    reflected_function=`type $function_name 2>&1`
-    if [[ `echo "$reflected_function" | grep -c 'is a function'` -eq 1 ]]
+    bootstrap_check_fn_parameters $function_name "url destination"
+    if [[ $? -eq 0 ]]
     then
-        if [[ `echo "$reflected_function" | grep -c 'in url destination'` -eq 1 ]]
-        then
-            namespaced GETTER_FUNC=$function_name
-        else
-            echo "$function_name() does not have parameters (url, destination) or they are in wrong order!"
-        fi
-    else
-        echo "$function_name is not a function!"
+        namespaced GETTER_FUNC=$function_name
+        return 0;
     fi
 }
 

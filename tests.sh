@@ -12,4 +12,4 @@ fi
 bootstrap_load_module core/testing/tests
 
 # run.
-testing::run_tests 'testing packager'
+testing::run_tests 'testing packager dependencies'

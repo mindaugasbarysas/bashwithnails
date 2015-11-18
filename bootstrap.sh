@@ -82,4 +82,23 @@ function bootstrap_trace
     done
 }
 
+function bootstrap_check_fn_parameters()
+{
+    local function_name=$1
+    local parameters=$2
+    reflected_function=`type $function_name 2>&1`
+    if [[ `echo "$reflected_function" | grep -c 'is a function'` -eq 1 ]]
+    then
+        if [[ `echo "$reflected_function" | grep -c 'in '"${parameters[@]}"` -eq 1 ]]
+        then
+            return 0;
+        else
+            echo "$function_name() does not have parameters (${parameters[@]}) or they are in wrong order!"
+        fi
+    else
+        echo "$function_name is not a function!"
+    fi
+    return $ERROR_BAD_PROGRAMMER
+}
+
 bootstrap_load_module core/dependencies

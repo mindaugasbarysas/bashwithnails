@@ -72,7 +72,7 @@ function test::custom_remote_repo_cached
 
 function test::bad_getter_function
 {
-    testing::assert "this::mock_function() does not have parameters (url, destination) or they are in wrong order!" "`packager::set_url_getter_function mock_function`"
+    testing::assert "this::mock_function() does not have parameters (url destination) or they are in wrong order!" "`packager::set_url_getter_function mock_function`"
     testing::assert "tests::packager::test_var is not a function!" "`packager::set_url_getter_function test_var`"
 }
 
