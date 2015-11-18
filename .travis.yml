@@ -1,7 +1,11 @@
 language: bash
 
-before_install:
-    - sudo apt-get install bc
+sudo: false
+
+addons:
+  apt:
+    packages:
+    - bc
 
 script:
     - bash tests.sh
