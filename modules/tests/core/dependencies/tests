@@ -15,7 +15,7 @@ function not_found_packager(module_name) {
     return $ERROR_NOT_FOUND;
 }
 
-function bootstrap_loader_mock_first_fail() {
+function bootstrap_loader_mock_first_fail(module_name) {
     if [[ ${namespaced bootstrap_called} -eq 0 ]]
     then
         namespaced bootstrap_called=1
