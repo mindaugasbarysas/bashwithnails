@@ -9,7 +9,7 @@ else
     exit 256
 fi
 
-bootstrap_load_module demo/app
+bootstrap::load_module demo/app
 
 # run.
 demo::run 'HELLO, WORLD'

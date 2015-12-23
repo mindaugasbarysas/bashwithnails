@@ -12,7 +12,7 @@ fi
 
 IGNORE_COVERAGE="tests/"
 
-bootstrap_load_module "core/testing/coverage"
+bootstrap::load_module "core/testing/coverage"
 
 command=$1
 test_script=$2

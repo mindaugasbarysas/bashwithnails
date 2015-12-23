@@ -3,11 +3,11 @@
 
 namespaced MODULE_LIST=()
 namespaced PACKAGER_GETTER='packager::get_module'
-namespaced BOOTSTRAP_LOADER='bootstrap_load_module'
-namespaced BOOTSTRAP_TRACER='bootstrap_trace'
+namespaced BOOTSTRAP_LOADER='bootstrap::load_module'
+namespaced BOOTSTRAP_TRACER='bootstrap::trace'
 
 function set_packager_getter(fn) {
-    bootstrap_check_fn_parameters $fn "module_name"
+    bootstrap::check_fn_parameters $fn "module_name"
     if [[ $? -eq 0 ]]
     then
         namespaced PACKAGER_GETTER=$fn

@@ -1,6 +1,7 @@
 #!/bin/bash
+#NAMESPACE=bootstrap
 
-function bootstrap_load_environment
+function bootstrap::load_environment
 {
      DIR=`dirname "${BASH_SOURCE[0]}"`
      if [[ -f $DIR/vars/environment.sh ]]
@@ -9,11 +10,11 @@ function bootstrap_load_environment
      fi
 }
 
-function bootstrap_load_module()
+function bootstrap::load_module()
 {
     if [[ $SCRIPT_DIR == '' ]]
     then
-        bootstrap_load_environment
+        bootstrap::load_environment
     fi
     if [[ ! -f $SCRIPT_DIR/$MODULE_DIR/$1 ]]
     then
@@ -27,15 +28,15 @@ function bootstrap_load_module()
         NAMESPACE="global"
     fi
     local TEMPFILE=`mktemp /tmp/shbs:${NAMESPACE}-${1//\//\~}.XXXXXXXXXX`
-    bootstrap_check $1
-    bootstrap_prepare_module $NAMESPACE $1 > $TEMPFILE
+    bootstrap::check $1
+    bootstrap::prepare_module $NAMESPACE $1 > $TEMPFILE
     . $TEMPFILE
-    bootstrap_check $1
+    bootstrap::check $1
     rm $TEMPFILE
-    bootstrap_check $1
+    bootstrap::check $1
 }
 
-function bootstrap_prepare_module()
+function bootstrap::prepare_module()
 {
     local NAMESPACE=$1
     local NAMESPACE_VAR=${NAMESPACE//::/__}
@@ -47,30 +48,30 @@ function bootstrap_prepare_module()
     sed -e "s/this::/$NAMESPACE::/g";
 }
 
-function bootstrap_module_from_namespace()
+function bootstrap::module_from_namespace()
 {
     grep -Re "#NAMESPACE=${1}$" $SCRIPT_DIR/$MODULE_DIR/* | cut -d: -f 1 | sed -e "s/\(.*\)$MODULE_DIR\///g"
 }
 
-function bootstrap_load_namespace()
+function bootstrap::load_namespace()
 {
     for module in `grep -Re "NAMESPACE=${1}$" $SCRIPT_DIR/$MODULE_DIR/* | cut -d: -f 1 | sed -e "s/$SCRIPT_DIR\/$MODULE_DIR\//g"`
     do
-        bootstrap_load_module $module
+        bootstrap::load_module $module
     done
 }
 
-function bootstrap_check()
+function bootstrap::check()
 {
     if [[ $? -ne 0 ]]
     then
         echo "Error loading module $1"
-        bootstrap_trace
+        bootstrap::trace
         exit 1
     fi
 }
 
-function bootstrap_trace
+function bootstrap::trace
 {
     echo "At:"
     for key in ${!BASH_LINENO[@]}
@@ -82,7 +83,7 @@ function bootstrap_trace
     done
 }
 
-function bootstrap_check_fn_parameters()
+function bootstrap::check_fn_parameters()
 {
     local function_name=$1
     local parameters=$2
@@ -101,4 +102,4 @@ function bootstrap_check_fn_parameters()
     return $ERROR_BAD_PROGRAMMER
 }
 
-bootstrap_load_module core/dependencies
+bootstrap::load_module core/dependencies

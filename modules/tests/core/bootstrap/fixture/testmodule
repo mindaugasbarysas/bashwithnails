@@ -1,0 +1,17 @@
+#!/bin/bash
+#NAMESPACE=tests::core::bootstrap::fixture::testmodule
+
+function myfunction
+{
+    echo "myfunction works";
+}
+
+function referring_function
+{
+    echo this::myfunction
+}
+
+function function_with_params(a b) {
+    echo $a $b
+}
+

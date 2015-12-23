@@ -9,7 +9,7 @@ else
     exit 256
 fi
 
-bootstrap_load_module core/testing/tests
+bootstrap::load_module core/testing/tests
 
 # run.
-testing::run_tests 'testing packager dependencies'
+testing::run_tests 'testing packager dependencies bootstrap'

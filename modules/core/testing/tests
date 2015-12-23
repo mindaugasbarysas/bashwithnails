@@ -8,7 +8,7 @@ function assert(expected actual) {
     namespaced ASSERTIONS=`expr ${namespaced ASSERTIONS} + 1`
     if [[ "$expected" != "$actual" ]]
     then
-        namespaced FAILURES+=("`echo -e "\nAssertion failed: expected '$expected', got '$actual'"; bootstrap_trace;`")
+        namespaced FAILURES+=("`echo -e "\nAssertion failed: expected '$expected', got '$actual'"; bootstrap::trace;`")
         return $ERROR_BAD_PROGRAMMER
     fi
 }
@@ -17,7 +17,7 @@ function run_tests(namespaces) {
     local test_count=0
     for namespace in $namespaces
     do
-        local MODULE=`bootstrap_module_from_namespace "tests::${namespace}"`
+        local MODULE=`bootstrap::module_from_namespace "tests::${namespace}"`
         local RETURN=0
         if [[ $MODULE == '' ]]
         then
@@ -26,7 +26,7 @@ function run_tests(namespaces) {
         fi
         for mod in $MODULE
         do
-            bootstrap_load_module "$mod"
+            bootstrap::load_module "$mod"
             for func_name in `cat $SCRIPT_DIR/$MODULE_DIR/$mod | grep -i 'Function test::' | cut -d ' ' -f 2`
             do
                 tests::${namespace}::$func_name

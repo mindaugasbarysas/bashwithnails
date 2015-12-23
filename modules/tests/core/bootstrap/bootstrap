@@ -1,0 +1,11 @@
+#!/bin/bash
+#NAMESPACE=tests::bootstrap
+
+#
+# Since bootstrap is the corest of the core (not a module), you'll just have to trust me on its coverage.
+#
+
+function test::load_module_ok
+{
+#    testing::assert false true
+}

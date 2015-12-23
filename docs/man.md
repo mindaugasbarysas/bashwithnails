@@ -21,13 +21,13 @@ else
     exit 256
 fi
 
-bootstrap_load_module demo/app
+bootstrap::load_module demo/app
 
 # run.
 demo::run 'HELLO, WORLD'
 ```
 
-Let's see what's happening here: first we find out where we are, then we load bootstrap. When bootstrap is ready, we load our module `demo/app` (which has namespace `demo`) with `bootstrap_load_module demo/app` and call our modules' `run` function with parameter `'HELLO, WORLD'`. Easy as 1, 2, 3!
+Let's see what's happening here: first we find out where we are, then we load bootstrap. When bootstrap is ready, we load our module `demo/app` (which has namespace `demo`) with `bootstrap::load_module demo/app` and call our modules' `run` function with parameter `'HELLO, WORLD'`. Easy as 1, 2, 3!
 
 ## Features
 
@@ -132,12 +132,12 @@ and should have a namespace `tests::my_awesome_namespace`.
 **GLOBAL**
 
 #### Functions
-`bootstrap_load_environment` - loads environment.
+`bootstrap::load_environment` - loads environment.
 
-`bootstrap_load_module($module)` - loads $module, sets its' namespace and does other black magick (e.g. makes functions accept their named parameters),
+`bootstrap::load_module($module)` - loads $module, sets its' namespace and does other black magick (e.g. makes functions accept their named parameters),
 
-`bootstrap_module_from_namespace($namespace)` - lookup function used to find modules providing $namespace
+`bootstrap::module_from_namespace($namespace)` - lookup function used to find modules providing $namespace
 
-`bootstrap_load_namespace($namespace)` - loads modules providing $namespace
+`bootstrap::load_namespace($namespace)` - loads modules providing $namespace
 
-`bootstrap_trace` - prints out a stack trace
+`bootstrap::trace` - prints out a stack trace
