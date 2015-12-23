@@ -1,0 +1,90 @@
+#!/bin/bash
+#NAMESPACE=routing::iproute
+
+dependencies::depends "routing/iptables"
+dependencies::register_module "routing/iproutes"
+
+# delete all default routes
+function clean_gateways(interfaces) {
+    for ifs in $interfaces
+    do
+        ip route del 0.0.0.0/1 dev $ifs 2>/dev/null
+    	delete_gw=`ip route | grep '128.0.0.0/1' | grep "dev $ifs"`
+        if [[ $delete_gw != '' ]]
+        then
+            ip route del $delete_gw
+        fi
+    done
+}
+
+# does table exist?
+function rt_table_exists(table) {
+    count=`cat /etc/iproute2/rt_tables | grep -c $table`
+    if [[ $count -lt 1 ]]
+    then
+        newid=`expr \`cat /etc/iproute2/rt_tables | awk '{print $table}' | sort | grep -vE ^25.$ | grep -v '#' | tail -n 1\` + 1`
+        if [[ $newid -lt 250 ]]
+        then
+            echo "$newid $1" >> /etc/iproute2/rt_tables
+        else
+            echo "Fatal: your routing tables are too full. See /etc/iproute2/rt_tables."
+            exit 255
+        fi
+    fi
+}
+
+# copy routes to table
+function copy_route(from to) {
+
+    this::table_exists $to
+    ip route flush table $to
+    ip route show table $from | sort | while read ROUTE
+    do
+	    ip route add table $to $ROUTE
+    done
+}
+
+
+# setup simple balanced gateways
+function setup_gateways_simple(interfaces gateways weights) {
+    routing::iptables::flush "nat" "POSTROUTING"
+    i=0
+    for ifs in $interfaces
+    do
+	    defaultGW=`echo "$defaultGW nexthop via ${gateways[$i]} dev $ifs weight ${weights[$i]} "`
+        routing::iptables::masquerade $ifs
+        let i=$i + 1
+    done
+    this::delete_default_gateways
+    this::copy_route main outerfaces
+    
+    ip rule del lookup outerfaces 2>/dev/null
+    ip rule add prio 254 lookup outerfaces
+    ip rule add prio 256 table main
+
+    local mark=299
+    for interface in $interfaces
+    do
+        let mark=$mark+1
+
+    	ip rule del fwmark 0x${mark} table link_${interface} 2>/dev/null
+    	ip rule add prio 50 fwmark 0x${mark} table link_${interface}
+
+    	ipset destroy lb_link_${interface} 2>/dev/null
+    	ipset create lb_link_${interface} hash:ip,port,ip timeout 1200
+    done
+
+    ip rule del table outerfaces 2>/dev/null
+    ip rule add prio 254 table outerfaces
+    routing::iptables::mark_interfaces 299 "$interfaces"
+    ip route add table outerfaces default scope global $defaultGW
+    
+}
+
+function delete_default_gateways
+{
+    while [[ `ip route show | grep -c "default"` -gt 0 ]]
+    do
+        ip delete default
+    done
+}

@@ -9,7 +9,12 @@ else
     exit 256
 fi
 
-bootstrap::load_module demo/app
+bootstrap::load_module routing/iproute
+
+interfaces=('eth1' 'eth2')
+gateways=('192.168.8.1' '192.168.7.1')
+weigths=(2 1)
+
+routing::iproute::setup_gateways_simple $interfaces $gateways $weigths
 
 # run.
-demo::run 'HELLO, WORLD'

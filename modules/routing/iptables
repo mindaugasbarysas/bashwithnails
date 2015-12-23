@@ -1,0 +1,36 @@
+#!/bin/bash
+#NAMESPACE=routing::iptables
+
+dependencies::register_module 'routing::iptables'
+
+function flush(table chain) {
+    iptables -t $table -F $chain
+}
+
+function masquerade(interface) {
+    iptables -t nat -A POSTROUTING -o $interface -j MASQUERADE
+}
+
+function mark_interfaces(mark interfaces) {
+    iptables -t mangle -X SETMARK
+    iptables -t mangle -X GETMARK
+    iptables -t mangle -X CTRACK
+    iptables -t mangle -N SETMARK
+    iptables -t mangle -N GETMARK
+    iptables -t mangle -N CTRACK
+    for interface in $interfaces
+    do
+        let mark=$mark+1
+    	iptables -t mangle -A SETMARK -o $interface -j MARK --set-mark 0x$mark
+    	iptables -t mangle -A SETMARK -m mark --mark 0x$mark -m set ! --match-set lb_link_${interface} src,dstport,dst -j SET --add-set lb_link_${interface} src,dstport,dst
+    	iptables -t mangle -A GETMARK -m mark --mark 0x0 -m set --match-set lb_link_${interface} src,dstport,dst -j MARK --set-mark 0x$mark
+        iptables -t mangle -A CTRACK -o $interface -m mark --mark 0x0 -j SETMARK
+        iptables -t mangle -A CTRACK -m mark ! --mark 0x0 -j CONNMARK --save-mark
+        iptables -t mangle -I POSTROUTING -j CTRACK
+    done
+
+    iptables -t mangle -A OUTPUT -m mark --mark 0x0 -j CONNMARK --restore-mark
+    iptables -t mangle -A OUTPUT -m mark --mark 0x0 -j GETMARK
+    iptables -t mangle -A PREROUTING -m mark --mark 0x0 -j CONNMARK --restore-mark
+    iptables -t mangle -A PREROUTING -m mark --mark 0x0 -j GETMARK
+}
