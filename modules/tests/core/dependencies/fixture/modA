@@ -1,0 +1,2 @@
+#!/bin/bash
+dependencies::depends "tests/core/dependencies/fixture/modB"
