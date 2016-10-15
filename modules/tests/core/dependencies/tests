@@ -55,3 +55,18 @@ function test::get_module_ok_load_module_fail
     testing::assert $ERROR_NOT_FOUND $?
     testing::assert 1 `echo "$result" | grep -c "Dependency unmet: other_bad/module is not loaded"`
 }
+
+function test::load_circular_reference
+{
+    dependencies::set_bootstrap_loader bootstrap_load_module
+    result=`dependencies::depends 'tests/core/dependencies/fixture/modA'`
+    testing::assert $ERROR_BAD_PROGRAMMER $?
+    testing::assert 1 `echo "$result" | grep -c "Circular dependency"`
+}
+
+function test::load_nested_reference
+{
+    dependencies::set_bootstrap_loader bootstrap_load_module
+    result=`dependencies::depends 'tests/core/dependencies/fixture/modAOK'`
+    testing::assert 0 $?
+}
