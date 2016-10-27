@@ -68,7 +68,7 @@ dependencies
 #### Functions
 `dependencies::depends($module)` - assures that $module is loaded or dies honorably having exhausted all means of loading said module.
 
-`dependencies::register_module($module)` - notes that $module is loaded, but $module should ask for it itself by calling this function. If $module does not do that, it will get loaded again and again. It is possible for $some_other_module to say "hey, i'm $module, register me ::dependencies!", and dependencies will do that. It's not its' job to judge and assign roles.
+`dependencies::register_module($module)` - notes that $module is loaded, but $module should ask for it itself by calling this function. It is optional, as `dependencies` will register the module after loading it. It is possible, however, for $some_other_module to say "hey, i'm $module, register me ::dependencies!", and dependencies will do that. The consequences, though, might not be that nice.
 
 ### core/packager
 
