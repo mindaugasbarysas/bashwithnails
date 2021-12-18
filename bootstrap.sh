@@ -1,5 +1,7 @@
 #!/bin/bash
 
+____BOOTSTRAP_MODULES=()
+
 function bootstrap_load_environment
 {
      DIR=`dirname "${BASH_SOURCE[0]}"`
@@ -11,6 +13,14 @@ function bootstrap_load_environment
 
 function bootstrap_load_module()
 {
+    for mod in ${____BOOTSTRAP_MODULES[@]}
+    do
+        if [[ $mod == $1 ]]
+        then
+            return 0
+        fi
+    done
+
     if [[ $SCRIPT_DIR == '' ]]
     then
         bootstrap_load_environment
@@ -26,13 +36,18 @@ function bootstrap_load_module()
         echo "Warning: no namespace set in $1, assuming NAMESPACE=global"
         NAMESPACE="global"
     fi
-    local TEMPFILE=`mktemp /tmp/shbs:${NAMESPACE}-${1//\//\~}.XXXXXXXXXX`
+    local COMPFILE="/tmp/shbs:${NAMESPACE}-${1//\//\~}.cached"
+    if [[ -f $COMPFILE && "`date +%s -r $SCRIPT_DIR/$MODULE_DIR/$1`" -le "`date +%s -r $COMPFILE`" ]]; then
+        . $COMPFILE
+        ____BOOTSTRAP_MODULES+=($1)
+        return
+    fi
+
     bootstrap_check $1
-    bootstrap_prepare_module $NAMESPACE $1 > $TEMPFILE
-    . $TEMPFILE
+    bootstrap_prepare_module $NAMESPACE $1 > $COMPFILE
+    . $COMPFILE
     bootstrap_check $1
-    rm $TEMPFILE
-    bootstrap_check $1
+    ____BOOTSTRAP_MODULES+=($1)
 }
 
 function bootstrap_prepare_module()
