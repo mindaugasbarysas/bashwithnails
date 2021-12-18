@@ -8,7 +8,7 @@ namespaced UNCOVERABLES='^$ ^# ^{ ^} ^done$ ^then$ ^else$ ^fi$ ^do$'
 function get_coverage(testfile) {
     export PS4='D: ${BASH_SOURCE} ${LINENO} +++ '
     namespaced COVERAGE_DATA=`/bin/bash -xv $testfile 2>&1| grep '^D*:' | cut -d\+ -f1 | cut -d- -f2- | sed -e 's/~/\//g' | grep -v "^D*:" | sort | uniq |\
-    sed -e 's/\.\(..........\) / /g'`
+    sed -e 's/\.cached / /g'`
 
 }
 

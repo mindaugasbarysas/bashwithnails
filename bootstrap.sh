@@ -13,6 +13,7 @@ function bootstrap_load_environment
 
 function bootstrap_load_module()
 {
+    local mod
     for mod in ${____BOOTSTRAP_MODULES[@]}
     do
         if [[ $mod == $1 ]]
