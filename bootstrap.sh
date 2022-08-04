@@ -2,6 +2,29 @@
 
 ____BOOTSTRAP_MODULES=()
 
+function bootstrap_sane_global_defaults
+{
+    if [[ -z $DIR ]]
+    then
+        DIR=`dirname "${BASH_SOURCE[0]}"`
+    fi
+
+    if [[ -z $DIR ]]
+    then
+        SCRIPT_DIR=$DIR
+    fi
+
+    if [[ -z $MODULE_DIR ]]
+    then
+        MODULE_DIR="modules"
+    fi
+
+    if [[ -z LOCAL_MODULE_DIR ]]
+    then
+        LOCAL_MODULE_DIR="app"
+    fi
+}
+
 function bootstrap_load_environment
 {
      DIR=`dirname "${BASH_SOURCE[0]}"`
@@ -13,10 +36,12 @@ function bootstrap_load_environment
 
 function bootstrap_load_module()
 {
-    local mod
-    for mod in ${____BOOTSTRAP_MODULES[@]}
+    local MOD
+    local MDIR
+    local LOAD_FLAG=0
+    for MOD in ${____BOOTSTRAP_MODULES[@]}
     do
-        if [[ $mod == $1 ]]
+        if [[ $MOD == $1 ]]
         then
             return 0
         fi
@@ -26,29 +51,41 @@ function bootstrap_load_module()
     then
         bootstrap_load_environment
     fi
-    if [[ ! -f $SCRIPT_DIR/$MODULE_DIR/$1 ]]
-    then
-        return $ERROR_NOT_FOUND
-    fi
-    local NAMESPACE=`cat $SCRIPT_DIR/$MODULE_DIR/$1 | grep "NAMESPACE=" | cut -d= -f2`
 
-    if [[ $NAMESPACE == "" ]]
-    then
-        echo "Warning: no namespace set in $1, assuming NAMESPACE=global"
-        NAMESPACE="global"
-    fi
-    local COMPFILE="/tmp/shbs:${NAMESPACE}-${1//\//\~}.cached"
-    if [[ -f $COMPFILE && "`date +%s -r $SCRIPT_DIR/$MODULE_DIR/$1`" -le "`date +%s -r $COMPFILE`" ]]; then
+    for MDIR in $MODULE_DIR $LOCAL_MODULE_DIR
+    do
+        if [[ ! -f $SCRIPT_DIR/$MDIR/$1 ]]
+        then
+            continue
+        fi
+        local NAMESPACE=`cat $SCRIPT_DIR/$MDIR/$1 | grep "NAMESPACE=" | cut -d= -f2`
+
+
+        if [[ $NAMESPACE == "" ]]
+        then
+            echo "Warning: no namespace set in $1, assuming NAMESPACE=global"
+            NAMESPACE="global"
+        fi
+        local COMPFILE="/tmp/shbs:${NAMESPACE}-${1//\//\~}.cached"
+        if [[ -f $SCRIPT_DIR/$MDIR/$1 && -f $COMPFILE && "`date +%s -r $SCRIPT_DIR/$MDIR/$1`" -le "`date +%s -r $COMPFILE`" ]]; then
+            . $COMPFILE
+            ____BOOTSTRAP_MODULES+=($1)
+            return
+        fi
+
+        bootstrap_check $1
+        bootstrap_prepare_module $NAMESPACE $1 $MDIR > $COMPFILE
         . $COMPFILE
+        bootstrap_check $1
+        LOAD_FLAG=1
+    done
+
+    if [[ $LOAD_FLAG -gt 0 ]]; then
         ____BOOTSTRAP_MODULES+=($1)
-        return
+        return 0
     fi
 
-    bootstrap_check $1
-    bootstrap_prepare_module $NAMESPACE $1 > $COMPFILE
-    . $COMPFILE
-    bootstrap_check $1
-    ____BOOTSTRAP_MODULES+=($1)
+    return $ERROR_NOT_FOUND
 }
 
 function bootstrap_prepare_module()
@@ -56,7 +93,8 @@ function bootstrap_prepare_module()
     local NAMESPACE=$1
     local NAMESPACE_VAR=${NAMESPACE//::/__}
     local MODULE=$2
-    cat $SCRIPT_DIR/$MODULE_DIR/$MODULE | \
+    local MDIR=$3
+    cat $SCRIPT_DIR/$MDIR/$MODULE | \
     sed -e "s/function\ /function $NAMESPACE::/g" | \
     sed -e "s/namespaced /${NAMESPACE_VAR}__/g" | \
     sed -e "s/function \(.*\)(\(.*\)) {/function \1 { for varname in \2; do if [[ \$# -ne 0 ]]; then local \${varname}=\"\$1\"; shift; else echo \"Required function parameter '\$varname' not set when calling '\1'\"; bootstrap_trace; fi; done; if [[ \$# -ne 0 ]]; then echo \"Extra parameters given when calling '\1'\"; bootstrap_trace; fi;/g" | \
@@ -65,14 +103,23 @@ function bootstrap_prepare_module()
 
 function bootstrap_module_from_namespace()
 {
-    grep -Re "#NAMESPACE=${1}$" $SCRIPT_DIR/$MODULE_DIR/* | cut -d: -f 1 | sed -e "s/\(.*\)$MODULE_DIR\///g"
+    local MDIR
+    for MDIR in $LOCAL_MODULE_DIR $MODULE_DIR
+    do
+        grep -Re "#NAMESPACE=${1}$" $SCRIPT_DIR/$MDIR/* | cut -d: -f 1 | sed -e "s/\(.*\)$MDIR\///g"
+    done
 }
 
 function bootstrap_load_namespace()
 {
-    for module in `grep -Re "NAMESPACE=${1}$" $SCRIPT_DIR/$MODULE_DIR/* | cut -d: -f 1 | sed -e "s/$SCRIPT_DIR\/$MODULE_DIR\//g"`
+    local MDIR
+    for MDIR in $LOCAL_MODULE_DIR $MODULE_DIR
     do
-        bootstrap_load_module $module
+        for module in `grep -Re "NAMESPACE=${1}$" $SCRIPT_DIR/$MDIR/* | cut -d: -f 1 | sed -e "s/$SCRIPT_DIR\/$MDIR\//g"`
+        do
+            MDIR=`echo $MDIR | rev`
+            bootstrap_load_module $module
+        done
     done
 }
 
@@ -116,5 +163,7 @@ function bootstrap_check_fn_parameters()
     fi
     return $ERROR_BAD_PROGRAMMER
 }
+
+bootstrap_sane_global_defaults
 
 bootstrap_load_module core/dependencies
