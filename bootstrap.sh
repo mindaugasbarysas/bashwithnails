@@ -106,7 +106,7 @@ function bootstrap_module_from_namespace()
     local MDIR
     for MDIR in $LOCAL_MODULE_DIR $MODULE_DIR
     do
-        grep -Re "#NAMESPACE=${1}$" $SCRIPT_DIR/$MDIR/* | cut -d: -f 1 | sed -e "s/\(.*\)$MDIR\///g"
+        grep -Re "#NAMESPACE=${1}$" $SCRIPT_DIR/$MDIR/ | cut -d: -f 1 | sed -e "s/\(.*\)$MDIR\///g" 2>&1
     done
 }
 
@@ -115,7 +115,7 @@ function bootstrap_load_namespace()
     local MDIR
     for MDIR in $LOCAL_MODULE_DIR $MODULE_DIR
     do
-        for module in `grep -Re "NAMESPACE=${1}$" $SCRIPT_DIR/$MDIR/* | cut -d: -f 1 | sed -e "s/$SCRIPT_DIR\/$MDIR\//g"`
+        for module in `grep -Re "NAMESPACE=${1}$" $SCRIPT_DIR/$MDIR/ | cut -d: -f 1 | sed -e "s/$SCRIPT_DIR\/$MDIR\//g"`
         do
             MDIR=`echo $MDIR | rev`
             bootstrap_load_module $module

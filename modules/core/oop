@@ -14,7 +14,7 @@ function new(namespace constructor_args object_name) {
     this::increase_num
     local MOD=`bootstrap_module_from_namespace $namespace`
     local TEMPFILE=`mktemp /tmp/sh-oop-${ID}.XXXXXXXXXX`
-    bootstrap_prepare_module $ID $MOD > $TEMPFILE
+    bootstrap_prepare_module $ID $MOD $MODULE_DIR > $TEMPFILE
     . $TEMPFILE
     rm $TEMPFILE
     namespaced IDLIST+=($ID)

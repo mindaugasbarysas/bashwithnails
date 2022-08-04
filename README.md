@@ -19,7 +19,6 @@ It has:
 
 see [Docs](https://github.com/mindaugasbarysas/bashwithnails/blob/master/docs/man.md) or clone and run for more information.
 
-
 ## How to run
 
 `./app.sh`
