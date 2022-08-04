@@ -1,0 +1,16 @@
+#!/bin/bash
+#NAMESPACE=demo
+
+dependencies::depends "core/oop"
+dependencies::depends "my_awesome_namespace/module"
+dependencies::register_module "demo/app"
+
+function run(demo_string) {
+    echo $demo_string;
+    oop::new oop_demo $'$\'1 a a a\' 2' 'obj_one'
+    oop::new oop_demo '3 4' 'obj_two'
+    oop::call 'obj_one' sum "N/A"
+    oop::call 'obj_two' sum "N/A"
+    oop::destroy 'obj_two' "N/A"
+}
+

@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#NAMESPACE=oop_demo
+namespaced a=0;
+namespaced b=0;
+
+function __construct(a b) {
+    namespaced a=$a;
+    namespaced b=$b;
+    echo "constructor called $a $b"
+}
+
+function sum
+{
+    echo ${namespaced a} + ${namespaced b};
+}
+
+function __destruct {
+    unset -f this::sum
+    unset -f this::__construct
+    unset -f this::__destruct
+    unset namespaced a
+    unset namespaced b
+    echo "Destructor called"
+}
