@@ -3,9 +3,14 @@
 
 dependencies::register_module "core/packager"
 
-namespaced REPO_ADDRESS=$GLOBAL_REPOSITORY_ADDRESS;
+namespaced REPO_ADDRESS="$GLOBAL_REPOSITORY_ADDRESS";
 namespaced CACHE_DIR=$GLOBAL_CACHE_DIR;
 namespaced GETTER_FUNC=this::wget_getter
+
+if [[ ! -d ${namespaced CACHE_DIR} ]]
+then
+    mkdir -p ${namespaced CACHE_DIR}
+fi
 
 function set_repository(repository_address) {
     namespaced REPO_ADDRESS=$repository_address;
@@ -34,7 +39,7 @@ function wget_getter(url destination) {
 
 function get_module(module_name) {
     module_name=${module_name//./}
-    for repo in ${namespaced REPO_ADDRESS}
+    for repo in ${namespaced REPO_ADDRESS[@]}
     do
         if [[ -f ${repo} ]]
         then
@@ -43,11 +48,11 @@ function get_module(module_name) {
             local filename=${namespaced CACHE_DIR}/`echo "${repo}" | $MD5 | cut -d\  -f1`
             if [[ ! -f $filename ]]
             then
-                    ${namespaced GETTER_FUNC} ${namespaced REPO_ADDRESS} $filename
+                    ${namespaced GETTER_FUNC} ${repo} $filename
                     if [[ $? -ne 0 ]]
                     then
                         rm $filename
-                        echo "repository not found at ${namespaced REPO_ADDRESS}"
+                        echo "repository not found at ${repo}"
                         bootstrap_trace
                         return $ERROR_NOT_FOUND
                     fi
