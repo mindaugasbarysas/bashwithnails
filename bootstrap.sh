@@ -19,7 +19,7 @@ function bootstrap_sane_global_defaults
         MODULE_DIR="modules"
     fi
 
-    if [[ -z LOCAL_MODULE_DIR ]]
+    if [[ -z $LOCAL_MODULE_DIR ]]
     then
         LOCAL_MODULE_DIR="app"
     fi
